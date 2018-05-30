@@ -1,6 +1,6 @@
 # merger
 
-[![GoDoc](https://godoc.org/github.com/iph0/merger?status.svg)](https://godoc.org/github.com/iph0/merger) [![Build Status](https://travis-ci.org/iph0/merger.svg?branch=master)](https://travis-ci.org/iph0/merger)
+[![GoDoc](https://godoc.org/github.com/iph0/merger?status.svg)](https://godoc.org/github.com/iph0/merger) [![Build Status](https://travis-ci.org/iph0/merger.svg?branch=master)](https://travis-ci.org/iph0/merger) [![Go Report Card](https://goreportcard.com/badge/github.com/iph0/merger)](https://goreportcard.com/report/github.com/iph0/merger)
 
 Package merger recursively merge two maps or structures into new one. Non-zero
 values from the right side has higher precedence. Slices do not merging, because
