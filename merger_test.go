@@ -112,13 +112,13 @@ func ExampleMerge() {
 	}
 
 	defaultConnrs := map[string]Connector{
-		"stat": Connector{
+		"stat": {
 			Port:     1234,
 			Username: "stat_writer",
 			DBName:   "stat",
 		},
 
-		"messages": Connector{
+		"messages": {
 			Host:     "messages.mydb.com",
 			Port:     5678,
 			Username: "moo",
@@ -128,13 +128,13 @@ func ExampleMerge() {
 	}
 
 	connrs := map[string]Connector{
-		"stat": Connector{
+		"stat": {
 			Host:     "stat.mydb.com",
 			Username: "foo",
 			Password: "foo_pass",
 		},
 
-		"metrics": Connector{
+		"metrics": {
 			Host:     "metrics.mydb.com",
 			Port:     4321,
 			Username: "bar",
