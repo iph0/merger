@@ -2,8 +2,8 @@
 // reserved. Use of this source code is governed by a MIT License that can
 // be found in the LICENSE file.
 
-// Package merger recursively merge two maps or structures into new one.
-// Non-zero values from the right side has higher precedence. Slices do not
+// Package merger performs recursive merge of two maps or structures into new
+// one. Non-zero values from the right side has higher precedence. Slices do not
 // merging, because main use case of this package is merging of configuration
 // parameters, and in this case merging of slices is unacceptable.
 package merger
