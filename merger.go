@@ -25,23 +25,38 @@ func Merge(left, right interface{}) interface{} {
 }
 
 func merge(left, right reflect.Value) reflect.Value {
+	left = stripValue(left)
+	right = stripValue(right)
 	leftKind := left.Kind()
 	rightKind := right.Kind()
-
-	if leftKind == reflect.Interface {
-		left = left.Elem()
-		leftKind = left.Kind()
-	}
-	if rightKind == reflect.Interface {
-		right = right.Elem()
-		rightKind = right.Kind()
-	}
 
 	if !left.IsValid() {
 		return right
 	}
 	if !right.IsValid() {
 		return left
+	}
+
+	if leftKind == reflect.Ptr &&
+		rightKind == reflect.Ptr {
+
+		left := left.Elem()
+		leftKind := left.Kind()
+
+		right := right.Elem()
+		rightKind := right.Kind()
+
+		if leftKind == reflect.Map &&
+			rightKind == reflect.Map {
+
+			return mergeMap(left, right).Addr()
+		}
+
+		if leftKind == reflect.Struct &&
+			rightKind == reflect.Struct {
+
+			return mergeStruct(left, right).Addr()
+		}
 	}
 
 	if leftKind == reflect.Map &&
@@ -54,27 +69,6 @@ func merge(left, right reflect.Value) reflect.Value {
 		rightKind == reflect.Struct {
 
 		return mergeStruct(left, right)
-	}
-
-	if leftKind == reflect.Ptr &&
-		rightKind == reflect.Ptr {
-
-		left := left.Elem()
-		leftKind := left.Kind()
-
-		right := right.Elem()
-		rightKind := right.Kind()
-
-		if leftKind == reflect.Struct &&
-			rightKind == reflect.Struct {
-
-			return mergeStruct(left, right).Addr()
-		}
-		if leftKind == reflect.Map &&
-			rightKind == reflect.Map {
-
-			return mergeMap(left, right).Addr()
-		}
 	}
 
 	if isZero(right) {
@@ -127,6 +121,16 @@ func mergeStruct(left, right reflect.Value) reflect.Value {
 	}
 
 	return result
+}
+
+func stripValue(value reflect.Value) reflect.Value {
+	valueKind := value.Kind()
+
+	if valueKind == reflect.Interface {
+		return value.Elem()
+	}
+
+	return value
 }
 
 func isZero(value reflect.Value) bool {
