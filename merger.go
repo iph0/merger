@@ -79,8 +79,8 @@ func merge(left, right reflect.Value) reflect.Value {
 }
 
 func mergeMap(left, right reflect.Value) reflect.Value {
-	bt := right.Type()
-	result := reflect.MakeMap(bt)
+	rightType := right.Type()
+	result := reflect.MakeMap(rightType)
 
 	for _, key := range left.MapKeys() {
 		result.SetMapIndex(key, left.MapIndex(key))
