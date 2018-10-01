@@ -20,7 +20,7 @@ type Merger struct {
 
 // Config type represents configuration parameters for merger.
 type Config struct {
-	// MergeHook hook is called on every merge pair.
+	// MergeHook is a hook that is called on every merge pair.
 	MergeHook func(m *Merger, left, right reflect.Value) reflect.Value
 }
 
