@@ -9,7 +9,9 @@
 // the right side has higher precedence.
 package merger
 
-import "reflect"
+import (
+	"reflect"
+)
 
 // Merge method performs recursive merge of two maps or structures into new one.
 func Merge(left, right interface{}) interface{} {
@@ -26,8 +28,8 @@ func Merge(left, right interface{}) interface{} {
 }
 
 func merge(left, right reflect.Value) reflect.Value {
-	left = stripValue(left)
-	right = stripValue(right)
+	left = reveal(left)
+	right = reveal(right)
 	leftKind := left.Kind()
 	rightKind := right.Kind()
 
@@ -42,31 +44,28 @@ func merge(left, right reflect.Value) reflect.Value {
 		rightKind == reflect.Ptr {
 
 		left := left.Elem()
-		leftKind := left.Kind()
-
 		right := right.Elem()
+		left = reveal(left)
+		right = reveal(right)
+		leftKind := left.Kind()
 		rightKind := right.Kind()
 
 		if leftKind == reflect.Map &&
 			rightKind == reflect.Map {
 
 			return mergeMap(left, right).Addr()
-		}
-
-		if leftKind == reflect.Struct &&
+		} else if leftKind == reflect.Struct &&
 			rightKind == reflect.Struct {
 
 			return mergeStruct(left, right).Addr()
 		}
-	}
 
-	if leftKind == reflect.Map &&
+		return merge(left, right).Addr()
+	} else if leftKind == reflect.Map &&
 		rightKind == reflect.Map {
 
 		return mergeMap(left, right)
-	}
-
-	if leftKind == reflect.Struct &&
+	} else if leftKind == reflect.Struct &&
 		rightKind == reflect.Struct {
 
 		return mergeStruct(left, right)
@@ -124,17 +123,17 @@ func mergeStruct(left, right reflect.Value) reflect.Value {
 	return result
 }
 
-func stripValue(value reflect.Value) reflect.Value {
-	valueKind := value.Kind()
+func isZero(value reflect.Value) bool {
+	zero := reflect.Zero(value.Type())
+	return reflect.DeepEqual(zero.Interface(), value.Interface())
+}
 
-	if valueKind == reflect.Interface {
+func reveal(value reflect.Value) reflect.Value {
+	kind := value.Kind()
+
+	if kind == reflect.Interface {
 		return value.Elem()
 	}
 
 	return value
-}
-
-func isZero(value reflect.Value) bool {
-	zero := reflect.Zero(value.Type())
-	return reflect.DeepEqual(zero.Interface(), value.Interface())
 }
