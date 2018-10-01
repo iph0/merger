@@ -59,8 +59,6 @@ func merge(left, right reflect.Value) reflect.Value {
 
 			return mergeStruct(left, right).Addr()
 		}
-
-		return merge(left, right).Addr()
 	} else if leftKind == reflect.Map &&
 		rightKind == reflect.Map {
 
