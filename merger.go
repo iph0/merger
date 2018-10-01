@@ -121,11 +121,6 @@ func mergeStruct(left, right reflect.Value) reflect.Value {
 	return result
 }
 
-func isZero(value reflect.Value) bool {
-	zero := reflect.Zero(value.Type())
-	return reflect.DeepEqual(zero.Interface(), value.Interface())
-}
-
 func reveal(value reflect.Value) reflect.Value {
 	kind := value.Kind()
 
@@ -134,4 +129,9 @@ func reveal(value reflect.Value) reflect.Value {
 	}
 
 	return value
+}
+
+func isZero(value reflect.Value) bool {
+	zero := reflect.Zero(value.Type())
+	return reflect.DeepEqual(zero.Interface(), value.Interface())
 }
