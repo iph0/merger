@@ -9,29 +9,57 @@
 // the right side has higher precedence.
 package merger
 
-import (
-	"reflect"
-)
+import "reflect"
 
-// Merge method performs recursive merge of two maps or structures into new one.
+var globalMerger = New(Config{})
+
+// Merger type represents merger.
+type Merger struct {
+	config *Config
+}
+
+// Config type represents configuration parameters for merger.
+type Config struct {
+	// MergeHook hook is called on every merge pair.
+	MergeHook func(m *Merger, left, right reflect.Value) reflect.Value
+}
+
+// New method creates new merger instance.
+func New(config Config) *Merger {
+	return &Merger{
+		config: &config,
+	}
+}
+
+// Merge method performs recursive merge of two values into new one using global
+// merger.
 func Merge(left, right interface{}) interface{} {
-	result := merge(
+	return globalMerger.Merge(left, right)
+}
+
+// Merge method performs recursive merge of two values into new one.
+func (m *Merger) Merge(left, right interface{}) interface{} {
+	res := m.merge(
 		reflect.ValueOf(left),
 		reflect.ValueOf(right),
 	)
 
-	if !result.IsValid() {
+	if !res.IsValid() {
 		return nil
 	}
 
-	return result.Interface()
+	return res.Interface()
 }
 
-func merge(left, right reflect.Value) reflect.Value {
+// MergeVals performs recursive merge of two reflect.Values into new one. Method
+// must be used only from MergeHook.
+func (m *Merger) MergeVals(left, right reflect.Value) reflect.Value {
+	return m.mergeVals(left, right)
+}
+
+func (m *Merger) merge(left, right reflect.Value) reflect.Value {
 	left = reveal(left)
 	right = reveal(right)
-	leftKind := left.Kind()
-	rightKind := right.Kind()
 
 	if !left.IsValid() {
 		return right
@@ -39,6 +67,17 @@ func merge(left, right reflect.Value) reflect.Value {
 	if !right.IsValid() {
 		return left
 	}
+
+	if m.config.MergeHook != nil {
+		return m.config.MergeHook(m, left, right)
+	}
+
+	return m.mergeVals(left, right)
+}
+
+func (m *Merger) mergeVals(left, right reflect.Value) reflect.Value {
+	leftKind := left.Kind()
+	rightKind := right.Kind()
 
 	if leftKind == reflect.Ptr &&
 		rightKind == reflect.Ptr {
@@ -53,20 +92,20 @@ func merge(left, right reflect.Value) reflect.Value {
 		if leftKind == reflect.Map &&
 			rightKind == reflect.Map {
 
-			return mergeMap(left, right).Addr()
+			return m.mergeMap(left, right).Addr()
 		} else if leftKind == reflect.Struct &&
 			rightKind == reflect.Struct {
 
-			return mergeStruct(left, right).Addr()
+			return m.mergeStruct(left, right).Addr()
 		}
 	} else if leftKind == reflect.Map &&
 		rightKind == reflect.Map {
 
-		return mergeMap(left, right)
+		return m.mergeMap(left, right)
 	} else if leftKind == reflect.Struct &&
 		rightKind == reflect.Struct {
 
-		return mergeStruct(left, right)
+		return m.mergeStruct(left, right)
 	}
 
 	if isZero(right) {
@@ -76,7 +115,7 @@ func merge(left, right reflect.Value) reflect.Value {
 	return right
 }
 
-func mergeMap(left, right reflect.Value) reflect.Value {
+func (m *Merger) mergeMap(left, right reflect.Value) reflect.Value {
 	rightType := right.Type()
 	result := reflect.MakeMap(rightType)
 
@@ -85,14 +124,14 @@ func mergeMap(left, right reflect.Value) reflect.Value {
 	}
 
 	for _, key := range right.MapKeys() {
-		value := merge(result.MapIndex(key), right.MapIndex(key))
+		value := m.merge(result.MapIndex(key), right.MapIndex(key))
 		result.SetMapIndex(key, value)
 	}
 
 	return result
 }
 
-func mergeStruct(left, right reflect.Value) reflect.Value {
+func (m *Merger) mergeStruct(left, right reflect.Value) reflect.Value {
 	leftType := left.Type()
 	rightType := right.Type()
 
@@ -114,7 +153,8 @@ func mergeStruct(left, right reflect.Value) reflect.Value {
 		}
 
 		if resField.CanSet() {
-			resField.Set(merge(leftField, rightField))
+			res := m.merge(leftField, rightField)
+			resField.Set(res)
 		}
 	}
 
