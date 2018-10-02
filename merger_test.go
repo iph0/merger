@@ -104,38 +104,34 @@ func TestMerge(t *testing.T) {
 
 func ExampleMerge() {
 	type Connector struct {
-		Host      string
-		Port      int
-		Username  string
-		Password  string
-		DBName    string
-		Reconnect bool
+		Host     string
+		Port     int
+		Username string
+		Password string
+		DBName   string
 	}
 
 	defaultConnrs := map[string]Connector{
 		"stat": {
-			Port:      1234,
-			Username:  "stat_writer",
-			DBName:    "stat",
-			Reconnect: true,
+			Port:     1234,
+			Username: "stat_writer",
+			DBName:   "stat",
 		},
 
 		"messages": {
-			Host:      "messages.mydb.com",
-			Port:      5678,
-			Username:  "moo",
-			Password:  "moo_pass",
-			DBName:    "messages",
-			Reconnect: true,
+			Host:     "messages.mydb.com",
+			Port:     5678,
+			Username: "moo",
+			Password: "moo_pass",
+			DBName:   "messages",
 		},
 	}
 
 	connrs := map[string]Connector{
 		"stat": {
-			Host:      "stat.mydb.com",
-			Username:  "foo",
-			Password:  "foo_pass",
-			Reconnect: false,
+			Host:     "stat.mydb.com",
+			Username: "foo",
+			Password: "foo_pass",
 		},
 
 		"metrics": {
@@ -147,30 +143,14 @@ func ExampleMerge() {
 		},
 	}
 
-	mrg := merger.New(
-		merger.Config{
-			MergeHook: func(m *merger.Merger, left, right reflect.Value) reflect.Value {
-				leftKind := left.Kind()
-				rightKind := right.Kind()
-
-				if leftKind == reflect.Bool &&
-					rightKind == reflect.Bool {
-
-					return right
-				}
-
-				return m.MergeValues(left, right)
-			},
-		},
-	)
-	connrs = mrg.Merge(defaultConnrs, connrs).(map[string]Connector)
+	connrs = merger.Merge(defaultConnrs, connrs).(map[string]Connector)
 
 	for name, connr := range connrs {
 		fmt.Printf("%s: %v\n", name, connr)
 	}
 
 	// Unordered output:
-	// stat: {stat.mydb.com 1234 foo foo_pass stat false}
-	// messages: {messages.mydb.com 5678 moo moo_pass messages true}
-	// metrics: {metrics.mydb.com 4321 bar bar_pass metrics false}
+	// stat: {stat.mydb.com 1234 foo foo_pass stat}
+	// messages: {messages.mydb.com 5678 moo moo_pass messages}
+	// metrics: {metrics.mydb.com 4321 bar bar_pass metrics}
 }
