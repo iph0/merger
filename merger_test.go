@@ -159,7 +159,7 @@ func ExampleMerge() {
 					return right
 				}
 
-				return m.MergeVals(left, right)
+				return m.MergeValues(left, right)
 			},
 		},
 	)

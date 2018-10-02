@@ -51,10 +51,10 @@ func (m *Merger) Merge(left, right interface{}) interface{} {
 	return res.Interface()
 }
 
-// MergeVals performs recursive merge of two reflect.Values into new one. Method
+// MergeValues performs recursive merge of two reflect.Values into new one. Method
 // must be used only from MergeHook.
-func (m *Merger) MergeVals(left, right reflect.Value) reflect.Value {
-	return m.mergeVals(left, right)
+func (m *Merger) MergeValues(left, right reflect.Value) reflect.Value {
+	return m.mergeValues(left, right)
 }
 
 func (m *Merger) merge(left, right reflect.Value) reflect.Value {
@@ -72,10 +72,10 @@ func (m *Merger) merge(left, right reflect.Value) reflect.Value {
 		return m.config.MergeHook(m, left, right)
 	}
 
-	return m.mergeVals(left, right)
+	return m.mergeValues(left, right)
 }
 
-func (m *Merger) mergeVals(left, right reflect.Value) reflect.Value {
+func (m *Merger) mergeValues(left, right reflect.Value) reflect.Value {
 	leftKind := left.Kind()
 	rightKind := right.Kind()
 
